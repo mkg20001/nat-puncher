@@ -308,6 +308,5 @@ PortControl.prototype.close = function () {
     })
   })
 }
-if (typeof freedom !== 'undefined') {
-  freedom().providePromises(PortControl)
-}
+
+module.exports = PortControl
