@@ -1,4 +1,9 @@
-var utils = require('./utils')
+'use strict'
+
+const utils = require('./utils')
+const dgram = require('dgram')
+
+
 /**
  * Probe if NAT-PMP is supported by the router
  * @public
@@ -14,6 +19,7 @@ var probeSupport = function (activeMappings, routerIpCache) {
       return mapping.externalPort !== -1
     })
 }
+
 /**
  * Makes a port mapping in the NAT with NAT-PMP,
  * and automatically refresh the mapping every two minutes
@@ -131,6 +137,7 @@ var addMapping = function (intPort, extPort, lifetime, activeMappings, routerIpC
   // mapping, add it to activeMappings, and return the mapping object
   return _sendPmpRequestsInWaves().then(_saveAndRefreshMapping)
 }
+
 /**
  * Deletes a port mapping in the NAT with NAT-PMP
  * @public
@@ -202,6 +209,7 @@ var deleteMapping = function (extPort, activeMappings, routerIpCache) {
       return false
     })
 }
+
 /**
  * Send a NAT-PMP request to the router to add or delete a port mapping
  * @private
@@ -217,7 +225,7 @@ var sendPmpRequest = function (routerIp, intPort, extPort, lifetime) {
   var socket
   // Binds a socket and sends the NAT-PMP request from that socket to routerIp
   var _sendPmpRequest = new Promise(function (F, R) {
-    socket = freedom['core.udpsocket']()
+    socket = dgram.createSocket('udp4')
     // Fulfill when we get any reply (failure is on timeout in wrapper function)
     socket.on('onData', function (pmpResponse) {
       utils.closeSocket(socket)

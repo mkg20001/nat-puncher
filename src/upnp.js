@@ -1,4 +1,8 @@
-var utils = require('./utils')
+'use strict'
+
+const utils = require('./utils')
+const dgram = require('dgram')
+
 /**
  * Probe if UPnP AddPortMapping is supported by the router
  * @public
@@ -18,6 +22,7 @@ var probeSupport = function (activeMappings) {
       return mapping.externalPort !== -1
     })
 }
+
 /**
  * Makes a port mapping in the NAT with UPnP AddPortMapping
  * @public
@@ -106,6 +111,7 @@ var addMapping = function (intPort, extPort, lifetime, activeMappings,
   // mapping, and add it to activeMappings
   return _handleUpnpFlow().then(_saveMapping)
 }
+
 /**
  * Deletes a port mapping in the NAT with UPnP DeletePortMapping
  * @public
@@ -125,6 +131,7 @@ var deleteMapping = function (extPort, activeMappings, controlUrl) {
     return false
   })
 }
+
 /**
  * Return the UPnP control URL of a router on the network that supports UPnP IGD
  * This wraps sendSsdpRequest() and fetchControlUrl() together
@@ -157,6 +164,7 @@ var _getUpnpControlUrl = function () {
     return Promise.reject(err)
   })
 }
+
 /**
  * A public version of _getUpnpControlUrl that suppresses the Promise rejection,
  * and replaces it with undefined. This is useful outside this module in a
@@ -168,6 +176,7 @@ var _getUpnpControlUrl = function () {
 var getUpnpControlUrl = function () {
   return _getUpnpControlUrl().catch(function (err) {})
 }
+
 /**
  * Send a UPnP SSDP request on the network and collects responses
  * @private
@@ -177,7 +186,7 @@ var getUpnpControlUrl = function () {
  */
 var sendSsdpRequest = function () {
   var ssdpResponses = []
-  var socket = freedom['core.udpsocket']()
+  var socket = dgram.createSocket('udp4')
   // Fulfill when we get any reply (failure is on timeout or invalid parsing)
   socket.on('onData', function (ssdpResponse) {
     ssdpResponses.push(ssdpResponse.data)
@@ -204,6 +213,7 @@ var sendSsdpRequest = function () {
     }, 3000)
   })
 }
+
 /**
  * Fetch the control URL from the information provided in the SSDP response
  * @private
@@ -257,6 +267,7 @@ var fetchControlUrl = function (ssdpResponse) {
     _fetchControlUrl
   ])
 }
+
 /**
  * Send an AddPortMapping request to the router's control URL
  * @private
@@ -313,6 +324,7 @@ var sendAddPortMapping = function (controlUrl, privateIp, intPort, extPort, life
     _sendAddPortMapping
   ])
 }
+
 /**
  * Send a DeletePortMapping request to the router's control URL
  * @private

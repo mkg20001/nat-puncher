@@ -1,10 +1,13 @@
-var utils = require('./utils')
-var natPmp = require('./nat-pmp')
-var pcp = require('./pcp')
-var upnp = require('./upnp')
-var PortControl = function (dispatchEvent) {
+'use strict'
+
+const utils = require('./utils')
+const natPmp = require('./nat-pmp')
+const pcp = require('./pcp')
+const upnp = require('./upnp')
+const PortControl = function (dispatchEvent) {
   this.dispatchEvent = dispatchEvent
 }
+
 /**
  * A table that keeps track of information about active Mappings
  * The Mapping type is defined in utils.js
@@ -14,11 +17,13 @@ var PortControl = function (dispatchEvent) {
  * }
  */
 PortControl.prototype.activeMappings = {}
+
 /**
  * An array of previous router IPs that have worked; we try these first when
  * sending NAT-PMP and PCP requests
  */
 PortControl.prototype.routerIpCache = []
+
 /**
  * An object that keeps track of which protocols are supported
  * This is updated every time this.probeProtocolSupport() is called
@@ -33,6 +38,7 @@ PortControl.prototype.protocolSupportCache = {
   upnp: undefined,
   upnpControlUrl: undefined
 }
+
 /**
  * Add a port mapping through the NAT, using a protocol that probeProtocolSupport()
  * found. If probeProtocolSupport() has not been previously called, i.e.
@@ -81,6 +87,7 @@ PortControl.prototype.addMapping = function (intPort, extPort, lifetime) {
     }
   }
 }
+
 /**
  * Delete the port mapping locally and from the router (and stop refreshes)
  * The port mapping must have a Mapping object in this.activeMappings
@@ -96,6 +103,7 @@ PortControl.prototype.deleteMapping = function (extPort) {
   }
   return mapping.deleter()
 }
+
 /**
  * Probes the NAT for NAT-PMP, PCP, and UPnP support,
  * and returns an object representing the NAT configuration
@@ -120,6 +128,7 @@ PortControl.prototype.probeProtocolSupport = function () {
     }
   })
 }
+
 /**
  * Probe if NAT-PMP is supported by the router
  * @public
@@ -129,6 +138,7 @@ PortControl.prototype.probeProtocolSupport = function () {
 PortControl.prototype.probePmpSupport = function () {
   return natPmp.probeSupport(this.activeMappings, this.routerIpCache)
 }
+
 /**
  * Makes a port mapping in the NAT with NAT-PMP,
  * and automatically refresh the mapping every two minutes
@@ -145,6 +155,7 @@ PortControl.prototype.addMappingPmp = function (intPort, extPort, lifetime) {
   return natPmp.addMapping(intPort, extPort, lifetime, this.activeMappings,
     this.routerIpCache)
 }
+
 /**
  * Deletes a port mapping in the NAT with NAT-PMP
  * The port mapping must have a Mapping object in this.activeMappings
@@ -160,6 +171,7 @@ PortControl.prototype.deleteMappingPmp = function (extPort) {
   }
   return mapping.deleter()
 }
+
 /**
  * Probe if PCP is supported by the router
  * @public
@@ -169,6 +181,7 @@ PortControl.prototype.deleteMappingPmp = function (extPort) {
 PortControl.prototype.probePcpSupport = function () {
   return pcp.probeSupport(this.activeMappings, this.routerIpCache)
 }
+
 /**
  * Makes a port mapping in the NAT with PCP,
  * and automatically refresh the mapping every two minutes
@@ -185,6 +198,7 @@ PortControl.prototype.addMappingPcp = function (intPort, extPort, lifetime) {
   return pcp.addMapping(intPort, extPort, lifetime, this.activeMappings,
     this.routerIpCache)
 }
+
 /**
  * Deletes a port mapping in the NAT with PCP
  * The port mapping must have a Mapping object in this.activeMappings
@@ -200,6 +214,7 @@ PortControl.prototype.deleteMappingPcp = function (extPort) {
   }
   return mapping.deleter()
 }
+
 /**
  * Probe if UPnP AddPortMapping is supported by the router
  * @public
@@ -209,6 +224,7 @@ PortControl.prototype.deleteMappingPcp = function (extPort) {
 PortControl.prototype.probeUpnpSupport = function () {
   return upnp.probeSupport(this.activeMappings)
 }
+
 /**
  * Makes a port mapping in the NAT with UPnP AddPortMapping
  * @public
@@ -226,6 +242,7 @@ PortControl.prototype.addMappingUpnp = function (intPort, extPort, lifetime,
   return upnp.addMapping(intPort, extPort, lifetime, this.activeMappings,
     controlUrl)
 }
+
 /**
  * Deletes a port mapping in the NAT with UPnP DeletePortMapping
  * The port mapping must have a Mapping object in this.activeMappings
@@ -241,6 +258,7 @@ PortControl.prototype.deleteMappingUpnp = function (extPort) {
   }
   return mapping.deleter()
 }
+
 /**
  * Return the UPnP control URL of a router on the network that supports UPnP IGD
  * @public
@@ -250,6 +268,7 @@ PortControl.prototype.deleteMappingUpnp = function (extPort) {
 PortControl.prototype.getUpnpControlUrl = function () {
   return upnp.getUpnpControlUrl()
 }
+
 /**
  * Returns the current value of activeMappings
  * @public
@@ -259,6 +278,7 @@ PortControl.prototype.getUpnpControlUrl = function () {
 PortControl.prototype.getActiveMappings = function () {
   return Promise.resolve(this.activeMappings)
 }
+
 /**
  * Return the router IP cache
  * @public
@@ -268,6 +288,7 @@ PortControl.prototype.getActiveMappings = function () {
 PortControl.prototype.getRouterIpCache = function () {
   return Promise.resolve(this.routerIpCache)
 }
+
 /**
  * Return the protocol support cache
  * @public
@@ -277,6 +298,7 @@ PortControl.prototype.getRouterIpCache = function () {
 PortControl.prototype.getProtocolSupportCache = function () {
   return Promise.resolve(this.protocolSupportCache)
 }
+
 /**
  * Return the private IP addresses of the computer
  * @public
@@ -287,6 +309,7 @@ PortControl.prototype.getProtocolSupportCache = function () {
 PortControl.prototype.getPrivateIps = function () {
   return utils.getPrivateIps()
 }
+
 /**
  * Deletes all the currently active port mappings
  * @public
@@ -309,4 +332,4 @@ PortControl.prototype.close = function () {
   })
 }
 
-module.exports = PortControl
+module.exports = new PortControl()

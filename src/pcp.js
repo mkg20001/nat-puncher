@@ -1,5 +1,10 @@
-var utils = require('./utils')
-var ipaddr = require('ipaddr.js')
+'use strict'
+
+const utils = require('./utils')
+const ipaddr = require('ipaddr.js')
+const dgram = require('dgram')
+
+
 /**
  * Probe if PCP is supported by the router
  * @public
@@ -15,6 +20,7 @@ var probeSupport = function (activeMappings, routerIpCache) {
       return mapping.externalPort !== -1
     })
 }
+
 /**
  * Makes a port mapping in the NAT with PCP,
  * and automatically refresh the mapping every two minutes
@@ -138,6 +144,7 @@ var addMapping = function (intPort, extPort, lifetime, activeMappings, routerIpC
   // mapping, add it to activeMappings, and return the mapping object
   return _sendPcpRequestsInWaves().then(_saveAndRefreshMapping)
 }
+
 /**
  * Deletes a port mapping in the NAT with PCP
  * @public
@@ -214,6 +221,7 @@ var deleteMapping = function (extPort, activeMappings, routerIpCache) {
       return false
     })
 }
+
 /**
  * Send a PCP request to the router to map a port
  * @private
@@ -240,7 +248,7 @@ var sendPcpRequest = function (routerIp, privateIp, intPort, extPort, lifetime,
   var ipOctets = ipaddr.IPv4.parse(privateIp).octets
   // Bind a socket and send the PCP request from that socket to routerIp
   var _sendPcpRequest = new Promise(function (F, R) {
-    socket = freedom['core.udpsocket']()
+    socket = dgram.createSocket('udp4')
     // Fulfill when we get any reply (failure is on timeout in wrapper function)
     socket.on('onData', function (pcpResponse) {
       utils.closeSocket(socket)

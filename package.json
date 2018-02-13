@@ -2,7 +2,8 @@
   "name": "nat-puncher",
   "description": "Opens ports through a NAT with NAT-PMP, PCP, and UPnP",
   "version": "0.1.1",
-  "author": "Kenny Song <kenny.ysong@gmail.com>",
+  "author": "Maciej Krüger <mkg20001@gmail.com>",
+  "original_author": "Kenny Song <kenny.ysong@gmail.com>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mkg20001/nat-puncher.git"
@@ -20,7 +21,7 @@
     "url": "https://github.com/mkg20001/nat-puncher/issues"
   },
   "homepage": "https://github.com/mkg20001/nat-puncher#readme",
-  "main": "src/port-control.js",
+  "main": "src/index.js",
   "license": "ISC",
   "dependencies": {
     "ipaddr.js": "^1.6.0"

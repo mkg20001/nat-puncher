@@ -1,4 +1,8 @@
-var ipaddr = require('ipaddr.js')
+'use strict'
+
+const ipaddr = require('ipaddr.js')
+const os = require('os')
+
 /**
  * List of popular router default IPs
  * Used as destination addresses for NAT-PMP and PCP requests
@@ -10,6 +14,7 @@ var ROUTER_IPS = ['192.168.1.1', '192.168.2.1', '192.168.11.1',
   '192.168.1.254', '192.168.10.1', '192.168.123.254', '192.168.4.1',
   '10.0.1.1', '10.1.1.1', '10.0.0.13', '10.0.0.2', '10.0.0.138'
 ]
+
 /**
  * Port numbers used to probe NAT-PMP, PCP, and UPnP, which don't overlap to
  * avoid port conflicts, which can have strange and inconsistent behaviors
@@ -18,6 +23,7 @@ var ROUTER_IPS = ['192.168.1.1', '192.168.2.1', '192.168.11.1',
 var NAT_PMP_PROBE_PORT = 55555
 var PCP_PROBE_PORT = 55556
 var UPNP_PROBE_PORT = 55557
+
 /**
  * An object representing a port mapping returned by mapping methods
  * @typedef {Object} Mapping
@@ -44,6 +50,7 @@ var Mapping = function () {
   this.deleter = undefined
   this.errInfo = undefined
 }
+
 /**
  * Return the private IP addresses of the computer
  * @public
@@ -51,44 +58,13 @@ var Mapping = function () {
  * @return {Promise<string>} A promise that fulfills with a list of IP address,
  *                           or rejects on timeout
  */
-var getPrivateIps = function () {
-  var privateIps = []
-  var pc = freedom['core.rtcpeerconnection']({
-    iceServers: []
-  })
-  // Find all the ICE candidates that are "host" candidates
-  pc.on('onicecandidate', function (candidate) {
-    if (candidate.candidate) {
-      var cand = candidate.candidate.candidate.split(' ')
-      if (cand[7] === 'host') {
-        var privateIp = cand[4]
-        if (ipaddr.IPv4.isValid(privateIp)) {
-          if (privateIps.indexOf(privateIp) === -1) {
-            privateIps.push(privateIp)
-          }
-        }
-      }
-    }
-  })
-  // Set up the PeerConnection to start generating ICE candidates
-  pc.createDataChannel('dummy data channel')
-  .then(pc.createOffer)
-  .then(pc.setLocalDescription)
-  // Gather candidates for 2 seconds before returning privateIps or timing out
+const getPrivateIps = function () {
   return new Promise(function (F, R) {
-    setTimeout(function () {
-      var cleanup = function () {
-        freedom['core.rtcpeerconnection'].close(pc)
-      }
-      pc.close().then(cleanup, cleanup)
-      if (privateIps.length > 0) {
-        F(privateIps)
-      } else {
-        R(new Error('getPrivateIps() failed'))
-      }
-    }, 2000)
+    const i = os.networkInterfaces()
+    F(Object.keys(i).map(k => i[k]).reduce((a, b) => a.concat(b), []).filter(i => !i.internal).map(i => i.address).filter(a => ipaddr.IPv4.isValid(a)))
   })
 }
+
 /**
  * Filters routerIps for only those that match any of the user's IPs in privateIps
  * i.e. The longest prefix matches of the router IPs with each user IP* @public
@@ -97,12 +73,13 @@ var getPrivateIps = function () {
  * @return {Array<string>} Router IPs that matched (one per private IP)
  */
 var filterRouterIps = function (privateIps) {
-  routerIps = []
+  let routerIps = []
   privateIps.forEach(function (privateIp) {
     routerIps.push(longestPrefixMatch(ROUTER_IPS, privateIp))
   })
   return routerIps
 }
+
 /**
  * Creates an ArrayBuffer with a compact matrix notation, i.e.
  * [[bits, byteOffset, value],
@@ -131,6 +108,7 @@ var createArrayBuffer = function (bytes, matrix) {
   }
   return buffer
 }
+
 /**
  * Return a promise that rejects in a given time with an Error message,
  * and can call a callback function before rejecting
@@ -151,6 +129,7 @@ var countdownReject = function (time, msg, callback) {
     }, time)
   })
 }
+
 /**
  * Close the OS-level sockets and discard its Freedom object
  * @public
@@ -158,10 +137,9 @@ var countdownReject = function (time, msg, callback) {
  * @param {freedom_UdpSocket.Socket} socket The socket object to close
  */
 var closeSocket = function (socket) {
-  socket.destroy().then(function () {
-    freedom['core.udpsocket'].close(socket)
-  })
+  socket.close()
 }
+
 /**
  * Takes a list of IP addresses and an IP address, and returns the longest prefix
  * match in the IP list with the IP
@@ -189,6 +167,7 @@ var longestPrefixMatch = function (ipList, matchIp) {
   var correctIp = ipList[maxIndex]
   return correctIp
 }
+
 /**
  * Return a random integer in a specified range
  * @public
@@ -200,6 +179,7 @@ var longestPrefixMatch = function (ipList, matchIp) {
 var randInt = function (min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
+
 /**
  * Convert an ArrayBuffer to a UTF-8 string
  * @public
@@ -215,6 +195,7 @@ var arrayBufferToString = function (buffer) {
   }
   return a.join('')
 }
+
 /**
  * Convert a UTF-8 string to an ArrayBuffer
  * @public
@@ -230,6 +211,7 @@ var stringToArrayBuffer = function (s) {
   }
   return buffer
 }
+
 /**
  * Returns the difference between two arrays
  * @param  {Array} listA
@@ -245,6 +227,7 @@ var arrDiff = function (listA, listB) {
   })
   return diff
 }
+
 /**
  * Adds two arrays, but doesn't include repeated elements
  * @param  {Array} listA
