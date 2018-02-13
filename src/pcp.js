@@ -255,7 +255,8 @@ var sendPcpRequest = function (routerIp, privateIp, intPort, extPort, lifetime,
       F(pcpResponse.data)
     })
     // Bind a UDP port and send a PCP request
-    socket.bind('0.0.0.0', 0).then(function (result) {
+    socket.bind('0.0.0.0', 0, err => {
+      if (err) return
       // PCP packet structure: https://tools.ietf.org/html/rfc6887#section-11.1
       var pcpBuffer = utils.createArrayBuffer(60, [
         [32, 0, 0x2010000],
@@ -273,7 +274,7 @@ var sendPcpRequest = function (routerIp, privateIp, intPort, extPort, lifetime,
         [16, 42, extPort],
         [16, 54, 0xffff]
       ])
-      socket.sendTo(pcpBuffer, routerIp, 5351)
+      socket.send(pcpBuffer, 5351, routerIp)
     })
   })
   // Give _sendPcpRequest 2 seconds before timing out

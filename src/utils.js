@@ -106,7 +106,7 @@ var createArrayBuffer = function (bytes, matrix) {
       console.error('Invalid parameters to createArrayBuffer')
     }
   }
-  return buffer
+  return Buffer.from(buffer)
 }
 
 /**
@@ -209,7 +209,7 @@ var stringToArrayBuffer = function (s) {
   for (var i = 0; i < s.length; ++i) {
     bytes[i] = s.charCodeAt(i)
   }
-  return buffer
+  return Buffer.from(buffer)
 }
 
 /**

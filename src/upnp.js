@@ -103,7 +103,7 @@ var addMapping = function (intPort, extPort, lifetime, activeMappings,
   }
   // If we catch an error, add it to the mapping object and console.log()
   function _handleError (err) {
-    console.log('UPnP failed at: ' + err.message)
+    // console.log('UPnP failed at: ' + err.message)
     mapping.errInfo = err.message
     return mapping
   }
@@ -192,7 +192,8 @@ var sendSsdpRequest = function () {
     ssdpResponses.push(ssdpResponse.data)
   })
   // Bind a socket and send the SSDP request
-  socket.bind('0.0.0.0', 0).then(function (result) {
+  socket.bind('0.0.0.0', 0, err => {
+    if (err) return
     // Construct and send a UPnP SSDP message
     var ssdpStr = 'M-SEARCH * HTTP/1.1\r\n' +
       'HOST: 239.255.255.250:1900\r\n' +
@@ -200,7 +201,7 @@ var sendSsdpRequest = function () {
       'MX: 3\r\n' +
       'ST: urn:schemas-upnp-org:device:InternetGatewayDevice:1\r\n\r\n'
     var ssdpBuffer = utils.stringToArrayBuffer(ssdpStr)
-    socket.sendTo(ssdpBuffer, '239.255.255.250', 1900)
+    socket.send(ssdpBuffer, 1900, '239.255.255.250')
   })
   // Collect SSDP responses for 3 seconds before timing out
   return new Promise(function (F, R) {

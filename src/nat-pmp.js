@@ -3,7 +3,6 @@
 const utils = require('./utils')
 const dgram = require('dgram')
 
-
 /**
  * Probe if NAT-PMP is supported by the router
  * @public
@@ -234,7 +233,8 @@ var sendPmpRequest = function (routerIp, intPort, extPort, lifetime) {
     // TODO(kennysong): Handle an error case for all socket.bind() when this issue is fixed:
     // https://github.com/uProxy/uproxy/issues/1687
     // Bind a UDP port and send a NAT-PMP request
-    socket.bind('0.0.0.0', 0).then(function (result) {
+    socket.bind('0.0.0.0', 0, err => {
+      if (err) return
       // NAT-PMP packet structure: https://tools.ietf.org/html/rfc6886#section-3.3
       var pmpBuffer = utils.createArrayBuffer(12, [
         [8, 1, 1],
@@ -242,7 +242,7 @@ var sendPmpRequest = function (routerIp, intPort, extPort, lifetime) {
         [16, 6, extPort],
         [32, 8, lifetime]
       ])
-      socket.sendTo(pmpBuffer, routerIp, 5351)
+      socket.send(pmpBuffer, 5351, routerIp)
     })
   })
   // Give _sendPmpRequest 2 seconds before timing out
