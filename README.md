@@ -47,9 +47,9 @@ Passing in a lifetime of `0` seconds will keep the port mapping open indefinitel
 This method returns a promise that will resolve to a `Mapping` object of the form,
 ```
 {
-  "internalIp": "192.168.1.50", 
-  "internalPort": 50000, 
-  "externalIp": "104.132.34.50", 
+  "internalIp": "192.168.1.50",
+  "internalPort": 50000,
+  "externalIp": "104.132.34.50",
   "externalPort": 50000,
   "lifetime": 120,
   "protocol": "natPmp",
