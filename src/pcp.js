@@ -68,7 +68,7 @@ var addMapping = function (intPort, extPort, lifetime, activeMappings, routerIpC
       // it as a Mapping object
       for (var i = 0; i < responses.length; i++) {
         if (responses[i] !== null) {
-          var responseView = new DataView(responses[i].pcpResponse)
+          var responseView = new DataView(responses[i].pcpResponse.buffer)
           var ipOctets = [responseView.getUint8(56), responseView.getUint8(57),
             responseView.getUint8(58), responseView.getUint8(59)
           ]
@@ -250,9 +250,9 @@ var sendPcpRequest = function (routerIp, privateIp, intPort, extPort, lifetime,
   var _sendPcpRequest = new Promise(function (F, R) {
     socket = dgram.createSocket('udp4')
     // Fulfill when we get any reply (failure is on timeout in wrapper function)
-    socket.on('onData', function (pcpResponse) {
-      utils.closeSocket(socket)
-      F(pcpResponse.data)
+    socket.on('message', function (pcpResponse) {
+      //utils.closeSocket(socket)
+      F(pcpResponse)
     })
     // Bind a UDP port and send a PCP request
     socket.bind('0.0.0.0', 0, err => {

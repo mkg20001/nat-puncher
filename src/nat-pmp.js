@@ -57,7 +57,8 @@ var addMapping = function (intPort, extPort, lifetime, activeMappings, routerIpC
     })).then(function (responses) {
       for (var i = 0; i < responses.length; i++) {
         if (responses[i] !== null) {
-          var responseView = new DataView(responses[i])
+          var responseView = new DataView(responses[i].buffer)
+
           mapping.externalPort = responseView.getUint16(10)
           mapping.lifetime = responseView.getUint32(12)
           var routerIntIp = routerIps[i]
@@ -226,10 +227,9 @@ var sendPmpRequest = function (routerIp, intPort, extPort, lifetime) {
   var _sendPmpRequest = new Promise(function (F, R) {
     socket = dgram.createSocket('udp4')
     // Fulfill when we get any reply (failure is on timeout in wrapper function)
-    socket.on('onData', function (pmpResponse) {
-      utils.closeSocket(socket)
-      F(pmpResponse.data)
-    })
+    socket.on('message', function (pmpResponse) {
+      F(pmpResponse)
+    });
     // TODO(kennysong): Handle an error case for all socket.bind() when this issue is fixed:
     // https://github.com/uProxy/uproxy/issues/1687
     // Bind a UDP port and send a NAT-PMP request
