@@ -188,8 +188,8 @@ var sendSsdpRequest = function () {
   var ssdpResponses = []
   var socket = dgram.createSocket('udp4')
   // Fulfill when we get any reply (failure is on timeout or invalid parsing)
-  socket.on('onData', function (ssdpResponse) {
-    ssdpResponses.push(ssdpResponse.data)
+  socket.on('message', function (ssdpResponse) {
+    ssdpResponses.push(ssdpResponse)
   })
   // Bind a socket and send the SSDP request
   socket.bind('0.0.0.0', 0, err => {
@@ -226,7 +226,7 @@ var fetchControlUrl = function (ssdpResponse) {
   // Promise to parse the location URL from the SSDP response, then send a POST
   // xhr to the location URL to find the router's UPNP control URL
   var _fetchControlUrl = new Promise(function (F, R) {
-    var ssdpStr = utils.arrayBufferToString(ssdpResponse)
+    var ssdpStr = utils.arrayBufferToString(ssdpResponse.buffer)
     var startIndex = ssdpStr.indexOf('LOCATION:') + 9
     var endIndex = ssdpStr.indexOf('\n', startIndex)
     var locationUrl = ssdpStr.substring(startIndex, endIndex).trim()
