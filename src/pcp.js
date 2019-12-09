@@ -4,7 +4,6 @@ const utils = require('./utils')
 const ipaddr = require('ipaddr.js')
 const dgram = require('dgram')
 
-
 /**
  * Probe if PCP is supported by the router
  * @public
@@ -15,7 +14,7 @@ const dgram = require('dgram')
  */
 var probeSupport = function (activeMappings, routerIpCache) {
   return addMapping(utils.PCP_PROBE_PORT, utils.PCP_PROBE_PORT, 120,
-      activeMappings, routerIpCache)
+    activeMappings, routerIpCache)
     .then(function (mapping) {
       return mapping.externalPort !== -1
     })
@@ -52,11 +51,11 @@ var addMapping = function (intPort, extPort, lifetime, activeMappings, routerIpC
         // using a longest prefix match, and send a PCP request with that IP
         var privateIp = utils.longestPrefixMatch(privateIps, routerIp)
         return sendPcpRequest(routerIp, privateIp, intPort, extPort,
-            reqLifetime)
+          reqLifetime)
           .then(function (pcpResponse) {
             return {
-              'pcpResponse': pcpResponse,
-              'privateIp': privateIp
+              pcpResponse: pcpResponse,
+              privateIp: privateIp
             }
           })
           .catch(function (err) {
@@ -129,7 +128,7 @@ var addMapping = function (intPort, extPort, lifetime, activeMappings, routerIpC
       setTimeout(function () {
         delete activeMappings[mapping.externalPort]
       },
-        mapping.lifetime * 1000)
+      mapping.lifetime * 1000)
     }
     // If mapping succeeded, attach a deleter function and add to activeMappings
     if (mapping.externalPort !== -1) {
@@ -251,7 +250,7 @@ var sendPcpRequest = function (routerIp, privateIp, intPort, extPort, lifetime,
     socket = dgram.createSocket('udp4')
     // Fulfill when we get any reply (failure is on timeout in wrapper function)
     socket.on('message', function (pcpResponse) {
-      //utils.closeSocket(socket)
+      // utils.closeSocket(socket)
       F(pcpResponse)
     })
     // Bind a UDP port and send a PCP request

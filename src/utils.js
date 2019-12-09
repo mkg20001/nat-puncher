@@ -4,16 +4,32 @@ const ipaddr = require('ipaddr.js')
 const os = require('os')
 
 /**
+ * Guess the gateway by whatevery nodeJS os.networkInterfaces() gives
+ * us to play with
+ */
+var guessedGateways = []
+try {
+  const networks = os.networkInterfaces()
+  Object.keys(networks)
+    .map(network => networks[network])
+    .reduce((a, b) => a.concat(b), []) // make a list
+    .filter(net => net.family === 'IPv4' && net.address !== '127.0.0.1') // filter only v4 non-localhost
+    .map(net => net.address.split('.').slice(0, 3).concat(['1']).join('.')) // guess the gateway based on our address
+} catch (err) {
+  // pass
+}
+
+/**
  * List of popular router default IPs
  * Used as destination addresses for NAT-PMP and PCP requests
  * http://www.techspot.com/guides/287-default-router-ip-addresses/
  */
-var ROUTER_IPS = ['192.168.1.1', '192.168.2.1', '192.168.11.1',
+var ROUTER_IPS = guessedGateways.concat(['192.168.1.1', '192.168.2.1', '192.168.11.1',
   '192.168.0.1', '192.168.0.30', '192.168.0.50', '192.168.20.1',
   '192.168.30.1', '192.168.62.1', '192.168.100.1', '192.168.102.1',
   '192.168.1.254', '192.168.10.1', '192.168.123.254', '192.168.4.1',
   '10.0.1.1', '10.1.1.1', '10.0.0.13', '10.0.0.2', '10.0.0.138'
-]
+])
 
 /**
  * Port numbers used to probe NAT-PMP, PCP, and UPnP, which don't overlap to
@@ -73,7 +89,7 @@ const getPrivateIps = function () {
  * @return {Array<string>} Router IPs that matched (one per private IP)
  */
 var filterRouterIps = function (privateIps) {
-  let routerIps = []
+  const routerIps = []
   privateIps.forEach(function (privateIp) {
     routerIps.push(longestPrefixMatch(ROUTER_IPS, privateIp))
   })

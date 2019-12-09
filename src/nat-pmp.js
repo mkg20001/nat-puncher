@@ -13,7 +13,7 @@ const dgram = require('dgram')
  */
 var probeSupport = function (activeMappings, routerIpCache) {
   return addMapping(utils.NAT_PMP_PROBE_PORT, utils.NAT_PMP_PROBE_PORT, 120,
-      activeMappings, routerIpCache)
+    activeMappings, routerIpCache)
     .then(function (mapping) {
       return mapping.externalPort !== -1
     })
@@ -122,7 +122,7 @@ var addMapping = function (intPort, extPort, lifetime, activeMappings, routerIpC
       setTimeout(function () {
         delete activeMappings[mapping.externalPort]
       },
-        mapping.lifetime * 1000)
+      mapping.lifetime * 1000)
     }
     // If mapping succeeded, attach a deleter function and add to activeMappings
     if (mapping.externalPort !== -1) {
@@ -229,7 +229,7 @@ var sendPmpRequest = function (routerIp, intPort, extPort, lifetime) {
     // Fulfill when we get any reply (failure is on timeout in wrapper function)
     socket.on('message', function (pmpResponse) {
       F(pmpResponse)
-    });
+    })
     // TODO(kennysong): Handle an error case for all socket.bind() when this issue is fixed:
     // https://github.com/uProxy/uproxy/issues/1687
     // Bind a UDP port and send a NAT-PMP request

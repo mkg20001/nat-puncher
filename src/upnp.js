@@ -14,13 +14,13 @@ const dgram = require('dgram')
 var probeSupport = function (activeMappings) {
   return addMapping(utils.UPNP_PROBE_PORT, utils.UPNP_PROBE_PORT, 120,
     activeMappings).then(function (mapping) {
-      if (mapping.errInfo &&
+    if (mapping.errInfo &&
       mapping.errInfo.indexOf('ConflictInMappingEntry') !== -1) {
       // This error response suggests that UPnP is enabled
-        return true
-      }
-      return mapping.externalPort !== -1
-    })
+      return true
+    }
+    return mapping.externalPort !== -1
+  })
 }
 
 /**
@@ -91,7 +91,7 @@ var addMapping = function (intPort, extPort, lifetime, activeMappings,
       setTimeout(function () {
         delete activeMappings[mapping.externalPort]
       },
-        mapping.lifetime * 1000)
+      mapping.lifetime * 1000)
     }
     // If mapping succeeded, attach a deleter function and add to activeMappings
     if (mapping.externalPort !== -1) {
