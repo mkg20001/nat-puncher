@@ -10,7 +10,7 @@ const os = require('os')
 var guessedGateways = []
 try {
   const networks = os.networkInterfaces()
-  Object.keys(networks)
+  guessedGateways = Object.keys(networks)
     .map(network => networks[network])
     .reduce((a, b) => a.concat(b), []) // make a list
     .filter(net => net.family === 'IPv4' && net.address !== '127.0.0.1') // filter only v4 non-localhost
