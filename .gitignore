@@ -1,5 +1,14 @@
+
+# custom
+
 .build/
 build/
 dist/
 node_modules/
 package-lock.json
+
+# node
+
+node_modules
+yarn-error.log
+yarn.lock

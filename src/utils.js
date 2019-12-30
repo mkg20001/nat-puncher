@@ -19,6 +19,13 @@ try {
   // pass
 }
 
+try {
+  const defaultGateway = require('default-gateway')
+  guessedGateways.push(defaultGateway.v4.sync().gateway)
+} catch (err) {
+  // pass
+}
+
 /**
  * List of popular router default IPs
  * Used as destination addresses for NAT-PMP and PCP requests
