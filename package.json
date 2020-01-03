@@ -34,9 +34,7 @@
   "main": "src/index.js",
   "license": "ISC",
   "dependencies": {
+    "default-gateway": "^5.0.5",
     "ipaddr.js": "^1.9.1"
-  },
-  "optionalDependencies": {
-    "default-gateway": "^5.0.5"
   }
 }
