@@ -332,10 +332,10 @@ var sendAddPortMapping = function (controlUrl, privateIp, intPort, extPort, life
  * @method sendDeletePortMapping
  * @param {string} controlUrl The control URL of the router
  * @param {number} extPort The external port of the mapping to delete
- * @return {string} The response string to the AddPortMapping request
+ * @return {string} The response string to the DeletePortMapping request
  */
 var sendDeletePortMapping = function (controlUrl, extPort) {
-  // Promise to send an AddPortMapping request to the control URL of the router
+  // Promise to send an DeletePortMapping request to the control URL of the router
   var _sendDeletePortMapping = new Promise(function (F, R) {
     // The DeletePortMapping SOAP request string
     var apm = '<?xml version="1.0"?>' +
