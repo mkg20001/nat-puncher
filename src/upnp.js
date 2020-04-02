@@ -288,6 +288,7 @@ var sendAddPortMapping = function (controlUrl, privateIp, intPort, extPort, life
       '<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">' +
       '<s:Body>' +
       '<u:AddPortMapping xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1">' +
+      '<NewRemoteHost></NewRemoteHost>' +
       '<NewExternalPort>' + extPort + '</NewExternalPort>' +
       '<NewProtocol>UDP</NewProtocol>' +
       '<NewInternalPort>' + intPort + '</NewInternalPort>' +
