@@ -64,8 +64,22 @@ var addMapping = function (intPort, extPort, lifetime, activeMappings,
       utils.getPrivateIps().then(function (privateIps) {
         internalIp = utils.longestPrefixMatch(privateIps, routerIp)
         sendAddPortMapping(controlUrl, internalIp, intPort, extPort, lifetime)
-          .then(function (response) {
-            F(response)
+          .then(function (addPortMappingResponse) {
+            // Try to get the external IP address
+            sendGetExternalIPAddress(controlUrl)
+                .then(function (getExternalIPAddressResponse) {
+                  var externalIp = undefined
+                  var preIndex = getExternalIPAddressResponse.indexOf('GetExternalIPAddressResponse')
+                  var startIndex = getExternalIPAddressResponse.indexOf('<NewExternalIPAddress>', preIndex)
+                  var endIndex = getExternalIPAddressResponse.indexOf('</NewExternalIPAddress>', startIndex)
+                  if (preIndex !== -1 && startIndex !== -1) {
+                    externalIp = getExternalIPAddressResponse.substring(startIndex + 22, endIndex)
+                  }
+                  F({externalIp: externalIp})
+                })
+                .catch(function (err) {
+                  R(err)
+                })
           })
           .catch(function (err) {
             R(err)
@@ -75,6 +89,7 @@ var addMapping = function (intPort, extPort, lifetime, activeMappings,
       // Success response to AddPortMapping (the internal IP of the mapping)
       // The requested external port will always be mapped on success, and the
       // lifetime will always be the requested lifetime; errors otherwise
+      mapping.externalIp = response.externalIp
       mapping.externalPort = extPort
       mapping.internalIp = internalIp
       mapping.lifetime = lifetime
