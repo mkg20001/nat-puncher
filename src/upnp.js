@@ -270,6 +270,53 @@ var fetchControlUrl = function (ssdpResponse) {
 }
 
 /**
+ * Send an GetExternalIPAddress request to the router's control URL
+ * @private
+ * @method sendGetExternalIPAddress
+ * @param {string} controlUrl The control URL of the router
+ * @return {string} The response string to the GetExternalIPAddress request
+ */
+var sendGetExternalIPAddress = function (controlUrl) {
+  // Promise to send an GetExternalIPAddress request to the control URL of the router
+  var _sendGetExternalIPAddress = new Promise(function (F, R) {
+    // The GetExternalIPAddress SOAP request string
+    // </s:Body></s:Envelope>
+    var apm = '<?xml version="1.0"?>' +
+        '<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">' +
+        '<s:Body>' +
+        '<u:GetExternalIPAddress xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1">' +
+        '</u:GetExternalIPAddress>' +
+        '</s:Body>' +
+        '</s:Envelope>'
+    // Create an XMLHttpRequest that encapsulates the SOAP string
+    var xhr = new XMLHttpRequest()
+    xhr.open('POST', controlUrl, true)
+    xhr.setRequestHeader('Content-Type', 'text/xml')
+    xhr.setRequestHeader('SOAPAction', '"urn:schemas-upnp-org:service:WANIPConnection:1#GetExternalIPAddress"')
+    // Send the GetExternalIPAddress request
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        // Success response to GetExternalIPAddress
+        F(xhr.responseText)
+      } else if (xhr.readyState === 4 && xhr.status === 500) {
+        // Error response to GetExternalIPAddress
+        var responseText = xhr.responseText
+        var startIndex = responseText.indexOf('<errorDescription>') + 18
+        var endIndex = responseText.indexOf('</errorDescription>', startIndex)
+        var errorDescription = responseText.substring(startIndex, endIndex)
+        R(new Error('GetExternalIPAddress Error: ' + errorDescription))
+      }
+    }
+    xhr.send(apm)
+  })
+  // Give _sendGetExternalIPAddress 1 second to run before timing out
+  return Promise.race([
+    utils.countdownReject(1000, 'GetExternalIPAddress time out'),
+    _sendGetExternalIPAddress
+  ])
+}
+
+/**
  * Send an AddPortMapping request to the router's control URL
  * @private
  * @method sendAddPortMapping
