@@ -64,8 +64,22 @@ var addMapping = function (intPort, extPort, lifetime, activeMappings,
       utils.getPrivateIps().then(function (privateIps) {
         internalIp = utils.longestPrefixMatch(privateIps, routerIp)
         sendAddPortMapping(controlUrl, internalIp, intPort, extPort, lifetime)
-          .then(function (response) {
-            F(response)
+          .then(function (addPortMappingResponse) {
+            // Try to get the external IP address
+            sendGetExternalIPAddress(controlUrl)
+                .then(function (getExternalIPAddressResponse) {
+                  var externalIp = undefined
+                  var preIndex = getExternalIPAddressResponse.indexOf('GetExternalIPAddressResponse')
+                  var startIndex = getExternalIPAddressResponse.indexOf('<NewExternalIPAddress>', preIndex)
+                  var endIndex = getExternalIPAddressResponse.indexOf('</NewExternalIPAddress>', startIndex)
+                  if (preIndex !== -1 && startIndex !== -1) {
+                    externalIp = getExternalIPAddressResponse.substring(startIndex + 22, endIndex)
+                  }
+                  F({externalIp: externalIp})
+                })
+                .catch(function (err) {
+                  R(err)
+                })
           })
           .catch(function (err) {
             R(err)
@@ -75,6 +89,7 @@ var addMapping = function (intPort, extPort, lifetime, activeMappings,
       // Success response to AddPortMapping (the internal IP of the mapping)
       // The requested external port will always be mapped on success, and the
       // lifetime will always be the requested lifetime; errors otherwise
+      mapping.externalIp = response.externalIp
       mapping.externalPort = extPort
       mapping.internalIp = internalIp
       mapping.lifetime = lifetime
@@ -270,6 +285,53 @@ var fetchControlUrl = function (ssdpResponse) {
 }
 
 /**
+ * Send an GetExternalIPAddress request to the router's control URL
+ * @private
+ * @method sendGetExternalIPAddress
+ * @param {string} controlUrl The control URL of the router
+ * @return {string} The response string to the GetExternalIPAddress request
+ */
+var sendGetExternalIPAddress = function (controlUrl) {
+  // Promise to send an GetExternalIPAddress request to the control URL of the router
+  var _sendGetExternalIPAddress = new Promise(function (F, R) {
+    // The GetExternalIPAddress SOAP request string
+    // </s:Body></s:Envelope>
+    var apm = '<?xml version="1.0"?>' +
+        '<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">' +
+        '<s:Body>' +
+        '<u:GetExternalIPAddress xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1">' +
+        '</u:GetExternalIPAddress>' +
+        '</s:Body>' +
+        '</s:Envelope>'
+    // Create an XMLHttpRequest that encapsulates the SOAP string
+    var xhr = new XMLHttpRequest()
+    xhr.open('POST', controlUrl, true)
+    xhr.setRequestHeader('Content-Type', 'text/xml')
+    xhr.setRequestHeader('SOAPAction', '"urn:schemas-upnp-org:service:WANIPConnection:1#GetExternalIPAddress"')
+    // Send the GetExternalIPAddress request
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        // Success response to GetExternalIPAddress
+        F(xhr.responseText)
+      } else if (xhr.readyState === 4 && xhr.status === 500) {
+        // Error response to GetExternalIPAddress
+        var responseText = xhr.responseText
+        var startIndex = responseText.indexOf('<errorDescription>') + 18
+        var endIndex = responseText.indexOf('</errorDescription>', startIndex)
+        var errorDescription = responseText.substring(startIndex, endIndex)
+        R(new Error('GetExternalIPAddress Error: ' + errorDescription))
+      }
+    }
+    xhr.send(apm)
+  })
+  // Give _sendGetExternalIPAddress 1 second to run before timing out
+  return Promise.race([
+    utils.countdownReject(1000, 'GetExternalIPAddress time out'),
+    _sendGetExternalIPAddress
+  ])
+}
+
+/**
  * Send an AddPortMapping request to the router's control URL
  * @private
  * @method sendAddPortMapping
@@ -332,10 +394,10 @@ var sendAddPortMapping = function (controlUrl, privateIp, intPort, extPort, life
  * @method sendDeletePortMapping
  * @param {string} controlUrl The control URL of the router
  * @param {number} extPort The external port of the mapping to delete
- * @return {string} The response string to the AddPortMapping request
+ * @return {string} The response string to the DeletePortMapping request
  */
 var sendDeletePortMapping = function (controlUrl, extPort) {
-  // Promise to send an AddPortMapping request to the control URL of the router
+  // Promise to send an DeletePortMapping request to the control URL of the router
   var _sendDeletePortMapping = new Promise(function (F, R) {
     // The DeletePortMapping SOAP request string
     var apm = '<?xml version="1.0"?>' +
