@@ -2,6 +2,7 @@
 
 const utils = require('./utils')
 const dgram = require('dgram')
+const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 /**
  * Probe if UPnP AddPortMapping is supported by the router
