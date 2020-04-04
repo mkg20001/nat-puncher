@@ -1,7 +1,7 @@
 {
   "name": "nat-puncher",
   "description": "Opens ports through a NAT with NAT-PMP, PCP, and UPnP",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "author": "Maciej Krüger <mkg20001@gmail.com>",
   "original_author": "Kenny Song <kenny.ysong@gmail.com>",
   "template": {
