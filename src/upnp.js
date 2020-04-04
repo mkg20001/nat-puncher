@@ -227,7 +227,7 @@ var fetchControlUrl = function (ssdpResponse) {
   // xhr to the location URL to find the router's UPNP control URL
   var _fetchControlUrl = new Promise(function (F, R) {
     var ssdpStr = utils.arrayBufferToString(ssdpResponse.buffer)
-    var startIndex = ssdpStr.indexOf('LOCATION:') + 9
+    var startIndex = ssdpStr.toUpperCase().indexOf('LOCATION:') + 9
     var endIndex = ssdpStr.indexOf('\n', startIndex)
     var locationUrl = ssdpStr.substring(startIndex, endIndex).trim()
     // Reject if there is no LOCATION header
